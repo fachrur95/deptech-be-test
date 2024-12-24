@@ -4,6 +4,8 @@ import {
   FindManyOptions,
   FindOneOptions,
   FindOptionsOrder,
+  FindOptionsRelationByString,
+  FindOptionsRelations,
   FindOptionsWhere,
   Like,
   Repository,
@@ -61,9 +63,7 @@ export abstract class AbstractRepository<T> {
     where?: FindOptionsWhere<T> | FindOptionsWhere<T>[],
     isSkipNotFound: boolean = false,
   ) {
-    const entity = (await this.getRepositoryBaseQuery('entity')).andWhere(
-      where,
-    );
+    const entity = this.getRepositoryBaseQuery('entity').andWhere(where);
 
     if (!(await entity.getOne())) {
       this.logger.warn(
@@ -114,7 +114,9 @@ export abstract class AbstractRepository<T> {
     where: FindOptionsWhere<T>,
     isSkipNotFound: boolean = false,
   ) {
-    await this.findOne(where, isSkipNotFound);
+    if (!isSkipNotFound) {
+      await this.findOne({ where });
+    }
 
     return this.entityRepository.delete(where);
   }
@@ -124,11 +126,13 @@ export abstract class AbstractRepository<T> {
     initialCondition,
     keySearch,
     initialKeySort = 'id',
+    relations,
   }: {
     filter: PaginationDto;
     initialCondition?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
     keySearch: string | string[];
     initialKeySort?: string;
+    relations?: FindOptionsRelationByString | FindOptionsRelations<T>;
   }) {
     let condition: FindOptionsWhere<T> | FindOptionsWhere<T>[] =
       initialCondition || []; // Initialize as an empty array if no initialCondition
@@ -156,6 +160,7 @@ export abstract class AbstractRepository<T> {
 
     // Ensure condition is an array before passing it to `findAndCount`
     const [data, count] = await this.findAndCount({
+      relations,
       where: condition,
       order: sort,
       skip: (filter.page - 1) * filter.limit, // Mengatur offset berdasarkan halaman

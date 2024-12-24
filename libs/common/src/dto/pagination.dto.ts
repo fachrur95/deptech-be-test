@@ -11,15 +11,15 @@ import { OrderByDto } from './order-by.dto';
 export class PaginationDto {
   @IsNumber()
   @IsOptional()
-  page?: number;
+  page?: number = 1;
 
   @IsNumber()
   @IsOptional()
-  limit: number;
+  limit: number = 10;
 
   @IsNumber()
   @IsOptional()
-  currentPage: number;
+  currentPage: number = 1;
 
   @IsBoolean()
   @IsOptional()

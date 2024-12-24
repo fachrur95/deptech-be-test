@@ -86,8 +86,11 @@ export class LeavesService {
   async findAll(filter: PaginationDto) {
     const dataPagination = await this.leavesRepository.pagination({
       filter,
-      keySearch: ['firstName', 'lastName', 'email'],
-      initialKeySort: 'firstName',
+      keySearch: 'reason',
+      initialKeySort: 'reason',
+      relations: {
+        employee: true,
+      },
     });
 
     return dataPagination;
@@ -98,7 +101,10 @@ export class LeavesService {
   }
 
   findOne(id: number) {
-    return this.leavesRepository.findOne({ where: { id } });
+    return this.leavesRepository.findOne({
+      where: { id },
+      relations: { employee: true },
+    });
   }
 
   async update(id: number, updateLeaveDto: UpdateLeaveDto) {
